@@ -13,15 +13,24 @@ const TransactionForm = document.getElementById('addTransactionForm');
 const transactionsListContainer = document.getElementById('transactionsList');
 const emptyState = document.getElementById('emptyState');
 const emptyAddTransactionBtn = document.getElementById('emptyAddTransactionBtn');
+const transactionId = document.getElementById('transactionId');
 
 let Transaction_arr = [];
 TransactionForm.addEventListener('submit', (e) => {
     e.preventDefault();
     let formData = new FormData(e.target);
     let data = Object.fromEntries(formData.entries());
-    data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
-    Transaction_arr.push(data);
-
+    let editID = transactionId.value;
+    if(editID){
+        let editTransaction = getTransactionData(editID);
+        if(editTransaction){
+            Object.assign(editTransaction,data);
+        } 
+    }else{
+        data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
+        Transaction_arr.push(data);
+    }
+    editID = null;
     TransactionForm.reset();
     handleOpenCloseModal('close');
     renderTransactionList();
@@ -68,7 +77,7 @@ const renderTransactionList = () => {
                 <button class="action-btn edit-btn" onclick="handleEditTransaction('${id}')" aria-label="Edit transaction" data-edit-id=${index}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
-                <button class="action-btn delete-btn" aria-label="Delete transaction" data-delete-id=${id}>
+                <button class="action-btn delete-btn" onclick="deleteTransaction('${id}')" aria-label="Delete transaction" data-delete-id=${id}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
             </div>
@@ -89,18 +98,39 @@ const categorySVGS = (type) => {
     return match_svg;
 }
 const FormModalTitle = document.getElementById('FormModalTitle');
+
 function handleEditTransaction(id){
-    let editData = Transaction_arr.find((data) => data.id === id);
-    console.log(editData);
+
+    let editData = getTransactionData(id);
     handleOpenCloseModal('open');
     FormModalTitle.textContent = 'Edit Transaction';
     formsubmit.textContent = 'Save Changes';
-
-
+    FillForm(TransactionForm,editData);
 }
 
+function deleteTransaction(id){
+  let deleteTran_inx = Transaction_arr.findIndex(item => item.id === id);
+  let userConfirmed  = confirm('Are you sure want to delete this Transaction ?');
+  if(deleteTran_inx && userConfirmed ){
+    Transaction_arr.splice(deleteTran_inx,1);
+    renderTransactionList();
+    SaveLocalStorage();
+  }
+}
+const FillForm = (form,data) =>{
+    //converts the object into an array of [key, value] pairs:
+    Object.entries(data).forEach(([key,value])=>{
+        let field = form.elements[key];
+        if(field){
+            field.value = value;
+        }
+    })
+    //The browser is doing a lot of the work for you. That's one of the nice things about the DOM form API.
+}
 
-
+function getTransactionData(id){
+  return Transaction_arr.find((data) => data.id === id)
+}
 
 
 
