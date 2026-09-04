@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('The DOM is fully loaded and parsed!');
     GetLocalStorage();
     renderTransactionList();
+    UpdateCards();
+
 })
 
 const Add_Transaction = document.getElementById('addTransactionBtn');
@@ -21,20 +23,21 @@ TransactionForm.addEventListener('submit', (e) => {
     let formData = new FormData(e.target);
     let data = Object.fromEntries(formData.entries());
     let editID = transactionId.value;
-    if(editID){
+    if (editID) {
         let editTransaction = getTransactionData(editID);
-        if(editTransaction){
-            Object.assign(editTransaction,data);
-        } 
-    }else{
+        if (editTransaction) {
+            Object.assign(editTransaction, data);
+        }
+    } else {
         data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
         Transaction_arr.push(data);
     }
-    editID = null;
+    transactionId.value = null;
     TransactionForm.reset();
     handleOpenCloseModal('close');
     renderTransactionList();
     SaveLocalStorage();
+    UpdateCards();
 });
 const renderTransactionList = () => {
     transactionsListContainer.innerHTML = '';
@@ -99,42 +102,54 @@ const categorySVGS = (type) => {
 }
 const FormModalTitle = document.getElementById('FormModalTitle');
 
-function handleEditTransaction(id){
+function handleEditTransaction(id) {
 
     let editData = getTransactionData(id);
     handleOpenCloseModal('open');
-    FormModalTitle.textContent = 'Edit Transaction';
-    formsubmit.textContent = 'Save Changes';
-    FillForm(TransactionForm,editData);
+    formModalReset('edit');
+    FillForm(TransactionForm, editData);
 }
 
-function deleteTransaction(id){
-  let deleteTran_inx = Transaction_arr.findIndex(item => item.id === id);
-  let userConfirmed  = confirm('Are you sure want to delete this Transaction ?');
-  if(deleteTran_inx && userConfirmed ){
-    Transaction_arr.splice(deleteTran_inx,1);
-    renderTransactionList();
-    SaveLocalStorage();
-  }
+function deleteTransaction(id) {
+    let deleteTran_inx = Transaction_arr.findIndex(item => item.id === id);
+    let userConfirmed = confirm('Are you sure want to delete this Transaction ?');
+    if (deleteTran_inx && userConfirmed) {
+        Transaction_arr.splice(deleteTran_inx, 1);
+        renderTransactionList();
+        SaveLocalStorage();
+        UpdateCards();
+    }
 }
-const FillForm = (form,data) =>{
+const FillForm = (form, data) => {
     //converts the object into an array of [key, value] pairs:
-    Object.entries(data).forEach(([key,value])=>{
+    Object.entries(data).forEach(([key, value]) => {
         let field = form.elements[key];
-        if(field){
+        if (field) {
             field.value = value;
         }
     })
     //The browser is doing a lot of the work for you. That's one of the nice things about the DOM form API.
 }
 
-function getTransactionData(id){
-  return Transaction_arr.find((data) => data.id === id)
+function getTransactionData(id) {
+    return Transaction_arr.find((data) => data.id === id)
 }
+const totalBalance = document.querySelector('.balance-card #totalbalance');
+const totalbalance_percentage = document.querySelector('.balance-card #totalbalance_percentage');
+const totalIncome = document.getElementById('totalIncome');
+const totalExpanse = document.getElementById('totalExpanse');
+const totalSaving = document.getElementById('totalSaving');
+function UpdateCards() {
+   
+    let income = Transaction_arr.filter(item => item.type === 'income').reduce((acc, item) => acc + Number(item.amount), 0);
+    let expence = Transaction_arr.filter(item => item.type === 'expense').reduce((acc, item) => acc + Number(item.amount), 0);
+    let saving = Number(income) - Number(expence);
 
-
-
-
+    totalBalance.textContent = `₹${saving}`;
+    totalIncome.textContent = `₹${Number(income)}`;
+    totalExpanse.textContent = `₹${Number(expence)}`;
+    totalSaving.textContent = `₹${saving}`;
+}
 
 
 
@@ -175,6 +190,7 @@ const GetLocalStorage = () => {
 
 
 Add_Transaction.addEventListener('click', () => {
+    formModalReset('add');
     handleOpenCloseModal('open');
 });
 emptyAddTransactionBtn.addEventListener('click', () => {
@@ -192,7 +208,17 @@ const handleOpenCloseModal = (action) => {
         Add_transaction_model.classList.remove('hidden');
     } else if (action == 'close') {
         Add_transaction_model.classList.add('hidden');
+        TransactionForm.reset();
     }
 
     return;
+}
+const formModalReset = (mode) =>{
+    if (mode == 'edit') {
+        FormModalTitle.textContent = 'Edit Transaction';
+        formsubmit.textContent = 'Save Changes';
+    } else {
+        FormModalTitle.textContent = 'Add Transaction';
+        formsubmit.textContent = 'Add';
+    }
 }
