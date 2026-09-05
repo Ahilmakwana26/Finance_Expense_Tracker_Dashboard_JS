@@ -16,6 +16,7 @@ const transactionsListContainer = document.getElementById('transactionsList');
 const emptyState = document.getElementById('emptyState');
 const emptyAddTransactionBtn = document.getElementById('emptyAddTransactionBtn');
 const transactionId = document.getElementById('transactionId');
+let originalTransaction_arr = null;
 
 let Transaction_arr = [];
 TransactionForm.addEventListener('submit', (e) => {
@@ -39,16 +40,19 @@ TransactionForm.addEventListener('submit', (e) => {
     SaveLocalStorage();
     UpdateCards();
 });
-const renderTransactionList = () => {
-    transactionsListContainer.innerHTML = '';
-    if (Transaction_arr.length == 0) {
+function handleEmptyState(mode) {
+    if (mode === 'show') {
         emptyState.classList.remove('hidden');
         Add_Transaction.classList.add('hidden');
-        return;
     } else {
         emptyState.classList.add('hidden');
         Add_Transaction.classList.remove('hidden');
     }
+}
+const renderTransactionList = () => {
+    transactionsListContainer.innerHTML = '';
+    handleEmptyState(Transaction_arr.length === 0 ? 'show' : 'hide');
+
     Transaction_arr.forEach((item, index) => {
         let id = item.id || null;
         let title = item.title || null;
@@ -140,7 +144,7 @@ const totalIncome = document.getElementById('totalIncome');
 const totalExpanse = document.getElementById('totalExpanse');
 const totalSaving = document.getElementById('totalSaving');
 function UpdateCards() {
-   
+
     let income = Transaction_arr.filter(item => item.type === 'income').reduce((acc, item) => acc + Number(item.amount), 0);
     let expence = Transaction_arr.filter(item => item.type === 'expense').reduce((acc, item) => acc + Number(item.amount), 0);
     let saving = Number(income) - Number(expence);
@@ -161,12 +165,68 @@ const GetLocalStorage = () => {
     let saveData = JSON.parse(localStorage.getItem('myTransactions'));
     if (Array.isArray(saveData)) {
         Transaction_arr.push(...saveData);
+        originalTransaction_arr = [...Transaction_arr];
     }
 }
 
+const searchTransactions = document.getElementById('searchTransactions');
+const categoryFilter = document.getElementById('categoryFilter');
+const typeFilter = document.getElementById('typeFilter');
+const dateFilter = document.getElementById('dateFilter');
+const sortFilter = document.getElementById('sortFilter');
+let filters = {
+    search_name: null,
+    category: null,
+    type: null,
+    date: null,
+    sort: null,
+}
 
+const handleSearch = (search, filter) => {
+    let isMatched = false;
+    Transaction_arr = [...originalTransaction_arr];
+    filters[filter] = search;
 
-
+    //Object.entries(filters)//array of key-value pairs
+    //every() → ALL must be true
+    //some()  → AT LEAST ONE must be true
+    const filteredData = Transaction_arr.filter(item => {
+        return Object.entries(filters).every(([key, value]) => {
+            if (!value || value === "All" || key === 'sort') return true;
+            if(key === 'search_name' && value!=''){
+              return item.title.toLowerCase().includes(value.toLowerCase());
+            }
+            if(key === 'date' && value!=''){
+            
+              return Date.parse(item.date) <= Date.parse(value);
+            }
+            return item[key] === value;
+        });
+    });
+    if (filteredData.length > 0) {
+        Transaction_arr = filteredData;
+        isMatched = true;
+    } else {
+        handleEmptyState('show');
+        document.querySelector('.empty-state-title').textContent = 'No Matching Record Found !';
+        emptyAddTransactionBtn.classList.add('hidden');
+        transactionsListContainer.innerHTML = '';
+        isMatched = false;
+    }
+    if (isMatched) renderTransactionList();
+}
+searchTransactions.addEventListener('input',(e)=>{
+    handleSearch(e.target.value,'search_name');
+})
+categoryFilter.addEventListener('change', () => {//Arrow functions do not have their own this They inherit 'this' from the surrounding scope, so this.value may be undefined.
+    handleSearch(categoryFilter.value, 'category');
+});
+typeFilter.addEventListener('change', () => {
+    handleSearch(typeFilter.value, 'type');
+})
+dateFilter.addEventListener('change',()=>{
+    handleSearch(dateFilter.value,'date');
+})
 
 
 
@@ -213,7 +273,7 @@ const handleOpenCloseModal = (action) => {
 
     return;
 }
-const formModalReset = (mode) =>{
+const formModalReset = (mode) => {
     if (mode == 'edit') {
         FormModalTitle.textContent = 'Edit Transaction';
         formsubmit.textContent = 'Save Changes';
