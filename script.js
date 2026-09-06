@@ -33,7 +33,7 @@ TransactionForm.addEventListener('submit', (e) => {
         data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
         Transaction_arr.push(data);
     }
-    transactionId.value = null;
+    idReset();
     TransactionForm.reset();
     handleOpenCloseModal('close');
     renderTransactionList();
@@ -72,7 +72,7 @@ const renderTransactionList = () => {
                 <p class="transaction-title">${title}</p>
                 <p class="transaction-category">${category}</p>
             </div>
-            <div class="transaction-cell transaction-date-mobile">
+            <div class="transaction-cell">
                 <span class="mobile-label">Date</span>
                 <span class="transaction-date">${data}</span>
             </div>
@@ -168,17 +168,21 @@ const GetLocalStorage = () => {
         originalTransaction_arr = [...Transaction_arr];
     }
 }
-
+const idReset = () =>{
+    transactionId.value = null;
+}
 const searchTransactions = document.getElementById('searchTransactions');
 const categoryFilter = document.getElementById('categoryFilter');
 const typeFilter = document.getElementById('typeFilter');
-const dateFilter = document.getElementById('dateFilter');
+const dateFrom = document.getElementById('dateFrom');
+const dateTo = document.getElementById('dateTo');
 const sortFilter = document.getElementById('sortFilter');
 let filters = {
     search_name: null,
     category: null,
     type: null,
-    date: null,
+    from: null,
+    to: null,
     sort: null,
 }
 
@@ -196,9 +200,11 @@ const handleSearch = (search, filter) => {
             if(key === 'search_name' && value!=''){
               return item.title.toLowerCase().includes(value.toLowerCase());
             }
-            if(key === 'date' && value!=''){
-            
-              return Date.parse(item.date) <= Date.parse(value);
+            if(key === 'from' && value!=''){
+              return Date.parse(item.date) >= Date.parse(value);//15-09-2026 >= 10-09-2026
+            }
+            if(key === 'to' && value!=''){
+              return Date.parse(item.date) <= Date.parse(value);//15-09-2026 <= 20-09-2026
             }
             return item[key] === value;
         });
@@ -224,10 +230,15 @@ categoryFilter.addEventListener('change', () => {//Arrow functions do not have t
 typeFilter.addEventListener('change', () => {
     handleSearch(typeFilter.value, 'type');
 })
-dateFilter.addEventListener('change',()=>{
-    handleSearch(dateFilter.value,'date');
+dateFrom.addEventListener('change',()=>{
+    handleSearch(dateFrom.value,'from');
 })
-
+dateTo.addEventListener('change',()=>{
+    handleSearch(dateTo.value,'to');
+})
+sortFilter.addEventListener('change',()=>{
+    handleSearch(sortFilter.value,'sort');
+})
 
 
 
@@ -269,6 +280,7 @@ const handleOpenCloseModal = (action) => {
     } else if (action == 'close') {
         Add_transaction_model.classList.add('hidden');
         TransactionForm.reset();
+        idReset();
     }
 
     return;
