@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     GetLocalStorage();
     renderTransactionList();
     UpdateCards();
+    renderCategoryWidget();
+    renderMonthlyChartWidget();
 
 })
 
@@ -17,7 +19,8 @@ const emptyState = document.getElementById('emptyState');
 const emptyAddTransactionBtn = document.getElementById('emptyAddTransactionBtn');
 const transactionId = document.getElementById('transactionId');
 let originalTransaction_arr = null;
-
+const categoryStatsContainer = document.getElementById('categoryStatsContainer');
+const monthlyChartContainer = document.querySelector('#monthlyChartContainer .chart-bars');
 let Transaction_arr = [];
 TransactionForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -92,7 +95,88 @@ const renderTransactionList = () => {
         transactionsListContainer.insertAdjacentHTML("beforeend", html);
     });
 }
+const renderCategoryWidget = () => {
+    //find the of income of current Month
+    //then get category with their total amount , also peracentage
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    let IncomeAmount = getDataByType();
+    let expenseItem = Transaction_arr.filter(item => {
+        if (item.date.startsWith(currentMonth) && item.type == 'expense') {
+            return true;
+        }
+    });
+    let categoryMap = expenseItem.reduce((acc, item) => {
+        const cag = item.category;
 
+        if (!acc[cag]) {
+            acc[cag] = {
+                transaction: [],
+                totalAmount: 0,
+                percentage: 0,
+            };
+        }
+        acc[cag].transaction.push(item);
+        acc[cag].totalAmount += Number(item.amount);
+        acc[cag].percentage = Math.floor((acc[cag].totalAmount / Number(IncomeAmount.income)) * 100);
+
+        return acc;
+    }, {})//Start acc as an empty object.
+
+    Object.entries(categoryMap).forEach(([category, details]) => {
+        let list = `<div class="category-item" data-category="${category}" id="${category}-food">
+                        <div class="category-row">
+                            <span class="category-name">${category.toUpperCase()}</span>
+                            <span class="category-amount" id="cat-amount-${category}">₹${details.totalAmount}</span>
+                        </div>
+                        <div class="progress-bar" role="progressbar" aria-valuenow="${details.percentage}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-fill progress-${category}" id="cat-bar-${category}" style="width: ${details.percentage}%"></div>
+                        </div>
+                    </div>`
+        categoryStatsContainer.insertAdjacentHTML('beforeend', list);
+    })
+
+
+
+}
+const renderMonthlyChartWidget = () =>{
+    let monthOverViewMap = Transaction_arr.reduce((acc,item)=>{
+        let itemTye = item.type;
+        const month = Number(item.date.split("-")[1]);
+        const monthName = new Date(2000,month - 1).toLocaleString("default", {month:"long"});
+       if(!acc[monthName]){
+            acc[monthName] = {
+                income:0,
+                expense:0,
+                incomePercentage:0,
+                expensePercentage :0
+            }
+       }
+        acc[monthName][itemTye] += Number(item.amount);
+        // const total = acc[monthName].income + acc[monthName].expense;
+        // acc[monthName].incomePercentage = Math.floor((acc[monthName].income / total) * 100);
+        //  acc[monthName].expensePercentage = Math.floor((acc[monthName].expense / total) * 100);
+       return acc;
+    },{});
+ 
+    Object.values(monthOverViewMap).forEach((month)=>{
+            const total = month.income + month.expense;
+            month.incomePercentage = Math.floor((month.income / total) * 100);
+            month.expensePercentage = Math.floor((month.expense / total) * 100);
+    })
+ console.log(monthOverViewMap);
+    Object.entries(monthOverViewMap).forEach(([key,item]) => {
+        let list = `
+         <div class="chart-bar-group" data-month="${key}">
+                    <div class="bar-group-bars">
+                        <div class="bar bar-income" id="bar-income-Apr" style="height: ${item.incomePercentage}%"></div>
+                    <div class="bar bar-expense" id="bar-expense-Apr" style="height: ${item.expensePercentage}%"></div>
+                </div>
+                <span class="bar-label">${key}</span>
+            </div>`
+
+        monthlyChartContainer.insertAdjacentHTML('beforeend', list);
+    })
+}
 const categorySVGS = (type) => {
     let svgs = [
         { type: 'food', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>' },
@@ -168,8 +252,25 @@ const GetLocalStorage = () => {
         originalTransaction_arr = [...Transaction_arr];
     }
 }
-const idReset = () =>{
+const idReset = () => {
     transactionId.value = null;
+}
+const getDataByType = () =>{
+    const monthYear = new Date().toISOString().slice(0, 7);
+
+    let income_amount = Transaction_arr.filter(item => {
+        return item.date.startsWith(monthYear) && item.type === 'income';
+    }).map(item => Number(item.amount));
+
+    let expense_amount = Transaction_arr.filter(item => {
+        return item.date.startsWith(monthYear) && item.type === 'expense';
+    }).map(item => Number(item.amount));
+
+    return {
+        income : income_amount,
+        expense : expense_amount
+    }
+
 }
 const searchTransactions = document.getElementById('searchTransactions');
 const categoryFilter = document.getElementById('categoryFilter');
@@ -197,14 +298,14 @@ const handleSearch = (search, filter) => {
     const filteredData = Transaction_arr.filter(item => {
         return Object.entries(filters).every(([key, value]) => {
             if (!value || value === "All" || key === 'sort') return true;
-            if(key === 'search_name' && value!=''){
-              return item.title.toLowerCase().includes(value.toLowerCase());
+            if (key === 'search_name' && value != '') {
+                return item.title.toLowerCase().includes(value.toLowerCase());
             }
-            if(key === 'from' && value!=''){
-              return Date.parse(item.date) >= Date.parse(value);//15-09-2026 >= 10-09-2026
+            if (key === 'from' && value != '') {
+                return Date.parse(item.date) >= Date.parse(value);//15-09-2026 >= 10-09-2026
             }
-            if(key === 'to' && value!=''){
-              return Date.parse(item.date) <= Date.parse(value);//15-09-2026 <= 20-09-2026
+            if (key === 'to' && value != '') {
+                return Date.parse(item.date) <= Date.parse(value);//15-09-2026 <= 20-09-2026
             }
             return item[key] === value;
         });
@@ -221,8 +322,8 @@ const handleSearch = (search, filter) => {
     }
     if (isMatched) renderTransactionList();
 }
-searchTransactions.addEventListener('input',(e)=>{
-    handleSearch(e.target.value,'search_name');
+searchTransactions.addEventListener('input', (e) => {
+    handleSearch(e.target.value, 'search_name');
 })
 categoryFilter.addEventListener('change', () => {//Arrow functions do not have their own this They inherit 'this' from the surrounding scope, so this.value may be undefined.
     handleSearch(categoryFilter.value, 'category');
@@ -230,14 +331,14 @@ categoryFilter.addEventListener('change', () => {//Arrow functions do not have t
 typeFilter.addEventListener('change', () => {
     handleSearch(typeFilter.value, 'type');
 })
-dateFrom.addEventListener('change',()=>{
-    handleSearch(dateFrom.value,'from');
+dateFrom.addEventListener('change', () => {
+    handleSearch(dateFrom.value, 'from');
 })
-dateTo.addEventListener('change',()=>{
-    handleSearch(dateTo.value,'to');
+dateTo.addEventListener('change', () => {
+    handleSearch(dateTo.value, 'to');
 })
-sortFilter.addEventListener('change',()=>{
-    handleSearch(sortFilter.value,'sort');
+sortFilter.addEventListener('change', () => {
+    handleSearch(sortFilter.value, 'sort');
 })
 
 
