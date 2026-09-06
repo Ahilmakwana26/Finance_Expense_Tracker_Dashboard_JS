@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMonthlyChartWidget();
 
 })
-
+//Modal , Form , buttons
 const Add_Transaction = document.getElementById('addTransactionBtn');
 const Add_transaction_model = document.getElementById('addTransactionModal');
 const close_modal = document.querySelector('#close_modal');
@@ -21,6 +21,22 @@ const transactionId = document.getElementById('transactionId');
 let originalTransaction_arr = null;
 const categoryStatsContainer = document.getElementById('categoryStatsContainer');
 const monthlyChartContainer = document.querySelector('#monthlyChartContainer .chart-bars');
+
+//Cards
+const totalBalance = document.querySelector('.balance-card #totalbalance');
+const totalbalance_percentage = document.querySelector('.balance-card #totalbalance_percentage');
+const totalIncome = document.getElementById('totalIncome');
+const totalExpanse = document.getElementById('totalExpanse');
+const totalSaving = document.getElementById('totalSaving');
+
+//Filters
+const searchTransactions = document.getElementById('searchTransactions');
+const categoryFilter = document.getElementById('categoryFilter');
+const typeFilter = document.getElementById('typeFilter');
+const dateFrom = document.getElementById('dateFrom');
+const dateTo = document.getElementById('dateTo');
+const sortFilter = document.getElementById('sortFilter');
+
 let Transaction_arr = [];
 TransactionForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -42,6 +58,8 @@ TransactionForm.addEventListener('submit', (e) => {
     renderTransactionList();
     SaveLocalStorage();
     UpdateCards();
+    renderCategoryWidget();
+    renderMonthlyChartWidget();
 });
 function handleEmptyState(mode) {
     if (mode === 'show') {
@@ -98,6 +116,7 @@ const renderTransactionList = () => {
 const renderCategoryWidget = () => {
     //find the of income of current Month
     //then get category with their total amount , also peracentage
+    categoryStatsContainer.innerHTML = '';
     const currentMonth = new Date().toISOString().slice(0, 7);
     let IncomeAmount = getDataByType();
     let expenseItem = Transaction_arr.filter(item => {
@@ -139,6 +158,7 @@ const renderCategoryWidget = () => {
 
 }
 const renderMonthlyChartWidget = () =>{
+    monthlyChartContainer.innerHTML = '';
     let monthOverViewMap = Transaction_arr.reduce((acc,item)=>{
         let itemTye = item.type;
         const month = Number(item.date.split("-")[1]);
@@ -163,8 +183,7 @@ const renderMonthlyChartWidget = () =>{
             month.incomePercentage = Math.floor((month.income / total) * 100);
             month.expensePercentage = Math.floor((month.expense / total) * 100);
     })
- console.log(monthOverViewMap);
-    Object.entries(monthOverViewMap).forEach(([key,item]) => {
+    Object.entries(monthOverViewMap).reverse().forEach(([key,item]) => {
         let list = `
          <div class="chart-bar-group" data-month="${key}">
                     <div class="bar-group-bars">
@@ -222,11 +241,7 @@ const FillForm = (form, data) => {
 function getTransactionData(id) {
     return Transaction_arr.find((data) => data.id === id)
 }
-const totalBalance = document.querySelector('.balance-card #totalbalance');
-const totalbalance_percentage = document.querySelector('.balance-card #totalbalance_percentage');
-const totalIncome = document.getElementById('totalIncome');
-const totalExpanse = document.getElementById('totalExpanse');
-const totalSaving = document.getElementById('totalSaving');
+
 function UpdateCards() {
 
     let income = Transaction_arr.filter(item => item.type === 'income').reduce((acc, item) => acc + Number(item.amount), 0);
@@ -238,8 +253,6 @@ function UpdateCards() {
     totalExpanse.textContent = `₹${Number(expence)}`;
     totalSaving.textContent = `₹${saving}`;
 }
-
-
 
 const SaveLocalStorage = () => {
     localStorage.setItem('myTransactions', JSON.stringify(Transaction_arr));
@@ -272,12 +285,7 @@ const getDataByType = () =>{
     }
 
 }
-const searchTransactions = document.getElementById('searchTransactions');
-const categoryFilter = document.getElementById('categoryFilter');
-const typeFilter = document.getElementById('typeFilter');
-const dateFrom = document.getElementById('dateFrom');
-const dateTo = document.getElementById('dateTo');
-const sortFilter = document.getElementById('sortFilter');
+
 let filters = {
     search_name: null,
     category: null,
@@ -340,26 +348,6 @@ dateTo.addEventListener('change', () => {
 sortFilter.addEventListener('change', () => {
     handleSearch(sortFilter.value, 'sort');
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Add_Transaction.addEventListener('click', () => {
     formModalReset('add');
