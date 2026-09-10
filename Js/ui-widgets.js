@@ -1,4 +1,4 @@
-import {Transaction_arr} from './state.js';
+import {getTransactions} from './state.js';
 
 export const renderCategoryWidget = (Transaction_arr,categoryStatsContainer) => {
     //find the of income of current Month
@@ -84,11 +84,11 @@ export const renderMonthlyChartWidget = (Transaction_arr,monthlyChartContainer) 
 const getDataByType = () =>{
     const monthYear = new Date().toISOString().slice(0, 7);
 
-    let income_amount = Transaction_arr.filter(item => {
+    let income_amount = getTransactions().filter(item => {
         return item.date.startsWith(monthYear) && item.type === 'income';
     }).map(item => Number(item.amount));
 
-    let expense_amount = Transaction_arr.filter(item => {
+    let expense_amount = getTransactions().filter(item => {
         return item.date.startsWith(monthYear) && item.type === 'expense';
     }).map(item => Number(item.amount));
 

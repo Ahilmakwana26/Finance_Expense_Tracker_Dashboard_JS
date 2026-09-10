@@ -1,4 +1,5 @@
- import { Add_transaction_model,TransactionForm,idReset } from "./app.js";
+ import { Add_transaction_model,TransactionForm,idReset,Add_Transaction,emptyState,FormModalTitle,formsubmit} from "./app.js";
+
  export const handleOpenCloseModal = (action) => {
 
     if (action == 'open') {
@@ -19,5 +20,14 @@
     } else {
         FormModalTitle.textContent = 'Add Transaction';
         formsubmit.textContent = 'Add';
+    }
+}
+export function toggleEmptyState(mode) {
+    if (mode === 'show') {
+        emptyState.classList.remove('hidden');
+        Add_Transaction.classList.add('hidden');
+    } else {
+        emptyState.classList.add('hidden');
+        Add_Transaction.classList.remove('hidden');
     }
 }

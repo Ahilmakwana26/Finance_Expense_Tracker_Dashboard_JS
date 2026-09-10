@@ -1,3 +1,8 @@
+import {getTransactions,originalTransaction_arr,setTransactions} from './state.js';
+import {emptyAddTransactionBtn,transactionsListContainer} from './app.js';
+import {renderTransactionList} from './ui-render.js';
+import { toggleEmptyState } from './ui-modal.js';
+
 let filters = {
     search_name: null,
     category: null,
@@ -6,16 +11,17 @@ let filters = {
     to: null,
     sort: null,
 }
-const applyFilters = (filterKey, filterValue) => {
+const applyFilters = (filterValue, filterKey) => {
     let isMatched = false;
-    Transaction_arr = [...originalTransaction_arr];
+    setTransactions(originalTransaction_arr);
     filters[filterKey] = filterValue;
 
     //Object.entries(filters)//array of key-value pairs
     //every() → ALL must be true
     //some()  → AT LEAST ONE must be true
-    const filteredData = Transaction_arr.filter(item => {
+    const filteredData = getTransactions().filter(item => {
         return Object.entries(filters).every(([key, value]) => {
+           // console.log(key,value)
             if (!value || value === "All" || key === 'sort') return true;
             if (key === 'search_name' && value != '') {
                 return item.title.toLowerCase().includes(value.toLowerCase());
@@ -30,16 +36,16 @@ const applyFilters = (filterKey, filterValue) => {
         });
     });
     if (filteredData.length > 0) {
-        Transaction_arr = filteredData;
+        setTransactions(filteredData);
         isMatched = true;
     } else {
-        handleEmptyState('show');
+        toggleEmptyState('show');
         document.querySelector('.empty-state-title').textContent = 'No Matching Record Found !';
         emptyAddTransactionBtn.classList.add('hidden');
         transactionsListContainer.innerHTML = '';
         isMatched = false;
     }
-    if (isMatched) renderTransactionList();
+    if (isMatched) renderTransactionList(getTransactions(),transactionsListContainer);
 }
 
 export default applyFilters;
