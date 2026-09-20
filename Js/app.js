@@ -5,7 +5,7 @@ import {renderTransactionList,updateSummaryCards} from './ui-render.js';
 import {handleOpenCloseModal,setModalMode} from './ui-modal.js';
 import {renderCategoryWidget,renderMonthlyChartWidget} from './ui-widgets.js';
 import {getTransactions,getTransactionById,addTransaction,updateTransaction, removeTransaction , FillForm,Transaction_arr} from './state.js';
-import {loadTransactions,addTransactionData} from './worker.js';
+import {loadTransactions,addTransactionData,editTransactionData} from './worker.js';
 
 //Modal
 export const Add_Transaction = document.getElementById('addTransactionBtn');
@@ -54,10 +54,7 @@ TransactionForm.addEventListener('submit', (e) => {
     let data = Object.fromEntries(formData.entries());
     let editID = transactionId.value;
     if (editID) {
-        let editTransaction = getTransactionById(editID);
-        if (editTransaction) {
-            Object.assign(editTransaction, data);
-        }
+        editTransactionData(editID);
     } else {
         data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
         addTransactionData(data);
