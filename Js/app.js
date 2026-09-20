@@ -4,9 +4,8 @@ import {getLocalStorage,saveLocalStorage} from './storage.js';
 import {renderTransactionList,updateSummaryCards} from './ui-render.js';
 import {handleOpenCloseModal,setModalMode} from './ui-modal.js';
 import {renderCategoryWidget,renderMonthlyChartWidget} from './ui-widgets.js';
-import {getTransactions,getTransactionById,addTransaction,updateTransaction, removeTransaction , FillForm} from './state.js';
-
-
+import {getTransactions,getTransactionById,addTransaction,updateTransaction, removeTransaction , FillForm,Transaction_arr} from './state.js';
+import {loadTransactions,addTransactionData} from './worker.js';
 
 //Modal
 export const Add_Transaction = document.getElementById('addTransactionBtn');
@@ -44,8 +43,8 @@ const typeFilter = document.getElementById('typeFilter');
 const dateFrom = document.getElementById('dateFrom');
 const dateTo = document.getElementById('dateTo');
 const sortFilter = document.getElementById('sortFilter');
-document.addEventListener('DOMContentLoaded', () => {
-    getLocalStorage();
+document.addEventListener('DOMContentLoaded',  async () => {
+    loadTransactions();
     globalUpate();
 
 });
@@ -61,12 +60,11 @@ TransactionForm.addEventListener('submit', (e) => {
         }
     } else {
         data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
-        addTransaction(data);
+        addTransactionData(data);
     }
     idReset();
     TransactionForm.reset();
     handleOpenCloseModal('close');
-    saveLocalStorage(getTransactions());
     globalUpate();
 });
 

@@ -394,56 +394,104 @@
                 </button>
             </div>
             <form id="addTransactionForm" class="transaction-form">
-                <input type="hidden" id="transactionId" name="id">
-                <div class="form-group">
-                    <label for="addTitle">Transaction Title</label>
-                    <input type="text" id="addTitle" name="title" class="form-input" placeholder="e.g., Grocery shopping" required>
-                </div>
-                <div class="form-group">
-                    <label for="addAmount">Amount (₹)</label>
-                    <input type="number" id="addAmount" name="amount" class="form-input" placeholder="0.00" min="0" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label>Transaction Type</label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="type" value="income" class="radio-input" required>
-                            <span class="radio-custom"></span>
-                            Income
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="type" value="expense" class="radio-input">
-                            <span class="radio-custom"></span>
-                            Expense
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="addCategory">Category</label>
-                    <select id="addCategory" name="category" class="form-input" required>
-                        <option value="">Select a category</option>
-                        <option value="food">Food</option>
-                        <option value="travel">Travel</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="bills">Bills</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="salary">Salary</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="addDate">Date</label>
-                    <input type="date" id="addDate" name="date" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="addDescription">Description</label>
-                    <textarea id="addDescription" name="description" class="form-input form-textarea" rows="3" placeholder="Optional notes about this transaction..."></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancel_btn" data-close-modal="addTransactionModal">Cancel</button>
-                    <button type="submit" id="formsubmit" class="btn btn-primary">Add Transaction</button>
-                </div>
-            </form>
+    <input type="hidden" id="transactionId" name="id">
+
+    <!-- Title / Description -->
+    <div class="form-group">
+        <label for="addTitle">Transaction Title</label>
+        <input type="text" id="addTitle" name="title" class="form-input" placeholder="e.g., Grocery shopping" required>
+    </div>
+
+    <!-- Party / Customer / Vendor Name -->
+    <div class="form-group">
+        <label for="addPartyName">Party Name</label>
+        <input type="text" id="addPartyName" name="party_name" class="form-input" placeholder="Client or Vendor name">
+    </div>
+
+    <!-- Amount -->
+    <div class="form-group">
+        <label for="addAmount">Amount (₹)</label>
+        <input type="number" id="addAmount" name="amount" class="form-input" placeholder="0.00" min="0" step="0.01" required>
+    </div>
+
+    <!-- Transaction Type -->
+    <div class="form-group">
+        <label>Transaction Type</label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="transaction_type" value="income" class="radio-input" required checked>
+                <span class="radio-custom"></span>
+                Income
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="transaction_type" value="expense" class="radio-input">
+                <span class="radio-custom"></span>
+                Expense
+            </label>
+        </div>
+    </div>
+
+    <!-- Category -->
+    <div class="form-group">
+        <label for="addCategory">Category</label>
+        <select id="addCategory" name="category" class="form-input" required>
+            <option value="">Select a category</option>
+            <option value="food">Food</option>
+            <option value="travel">Travel</option>
+            <option value="shopping">Shopping</option>
+            <option value="bills">Bills</option>
+            <option value="entertainment">Entertainment</option>
+            <option value="salary">Salary</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+
+    <!-- Payment Method & Reference No -->
+    <div class="form-row" style="display: flex; gap: 1rem;">
+        <div class="form-group" style="flex: 1;">
+            <label for="addPaymentMethod">Payment Method</label>
+            <select id="addPaymentMethod" name="payment_method" class="form-input" required>
+                <option value="">Select method</option>
+                <option value="cash">Cash</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="upi">UPI / GPay / PhonePe</option>
+                <option value="credit_card">Credit Card</option>
+                <option value="cheque">Cheque</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label for="addReferenceNo">Reference / Txn No.</label>
+            <input type="text" id="addReferenceNo" name="reference_no" class="form-input" placeholder="e.g., UPI Ref, Cheque No">
+        </div>
+    </div>
+
+    <!-- Date & Status -->
+    <div class="form-row" style="display: flex; gap: 1rem;">
+        <div class="form-group" style="flex: 1;">
+            <label for="addDate">Date</label>
+            <input type="date" id="addDate" name="transaction_date" class="form-input" required>
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label for="addStatus">Status</label>
+            <select id="addStatus" name="status" class="form-input" required>
+                <option value="completed" selected>Completed</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+        <label for="addDescription">Description</label>
+        <textarea id="addDescription" name="description" class="form-input form-textarea" rows="3" placeholder="Optional notes about this transaction..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancel_btn" data-close-modal="addTransactionModal">Cancel</button>
+        <button type="submit" id="formsubmit" class="btn btn-primary">Add Transaction</button>
+    </div>
+</form>
         </div>
     </div>
     <div class="modal-overlay hidden" id="modalOverlay"></div>

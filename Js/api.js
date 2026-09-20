@@ -1,0 +1,37 @@
+API_URL = 'https/http://192.168.31.81:8000/api';
+
+
+const getTransactionData = async () => {
+    try {
+        let response = await fetch(`${API_URL}/transactions`);
+        let data = await response.json();
+
+        if (data) {
+            return data.data.data;
+        }
+
+    } catch (error) {
+        console.log('something wrong ,error is', error)
+        return error;
+    }
+}
+
+const add = async (data) => {
+     await fetch(`${API_URL}/add`, {
+        method: 'POST',
+        headers: {
+            'Content_type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`http Error ! ${response.status}`)
+        }
+        return response.json();
+    }).then(data => {
+        return ['sucess',data];
+    }).catch(error => {
+        console.error('something wrong during add transaction',error);
+    })
+
+}
