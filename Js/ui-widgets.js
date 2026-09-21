@@ -7,7 +7,7 @@ export const renderCategoryWidget = (Transaction_arr,categoryStatsContainer) => 
     const currentMonth = new Date().toISOString().slice(0, 7);
     let IncomeAmount = getDataByType();
     let expenseItem = Transaction_arr.filter(item => {
-        if (item.date.startsWith(currentMonth) && item.type == 'expense') {
+        if (item.transaction_date.startsWith(currentMonth) && item.type == 'expense') {
             return true;
         }
     });
@@ -46,7 +46,7 @@ export const renderMonthlyChartWidget = (Transaction_arr,monthlyChartContainer) 
     monthlyChartContainer.innerHTML = '';
     let monthOverViewMap = Transaction_arr.reduce((acc,item)=>{
         let itemTye = item.type;
-        const month = Number(item.date.split("-")[1]);
+        const month = Number(item.transaction_date.split("-")[1]);
         const monthName = new Date(2000,month - 1).toLocaleString("default", {month:"long"});
        if(!acc[monthName]){
             acc[monthName] = {
@@ -85,11 +85,11 @@ const getDataByType = () =>{
     const monthYear = new Date().toISOString().slice(0, 7);
 
     let income_amount = getTransactions().filter(item => {
-        return item.date.startsWith(monthYear) && item.type === 'income';
+        return item.transaction_date.startsWith(monthYear) && item.type === 'income';
     }).map(item => Number(item.amount));
 
     let expense_amount = getTransactions().filter(item => {
-        return item.date.startsWith(monthYear) && item.type === 'expense';
+        return item.transaction_date.startsWith(monthYear) && item.type === 'expense';
     }).map(item => Number(item.amount));
 
     return {

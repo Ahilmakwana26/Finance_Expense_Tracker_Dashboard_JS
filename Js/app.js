@@ -44,8 +44,10 @@ const dateFrom = document.getElementById('dateFrom');
 const dateTo = document.getElementById('dateTo');
 const sortFilter = document.getElementById('sortFilter');
 document.addEventListener('DOMContentLoaded',  async () => {
-    loadTransactions();
-    globalUpate();
+    let loaded =await loadTransactions();
+    if(loaded){
+         globalUpate();
+    }
 
 });
 TransactionForm.addEventListener('submit', (e) => {

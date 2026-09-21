@@ -1,10 +1,15 @@
-API_URL = 'https/http://192.168.31.81:8000/api';
+const API_URL = 'http://192.168.31.81:8000/api';
 
 
 export const getTransactionData = async () => {
     try {
-        let response = await fetch(`${API_URL}/transactions`);
+        let response = await fetch(`${API_URL}/transaction`);
+        
+        if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+       }
         let data = await response.json();
+
 
         if (data) {
             return data.data.data;
