@@ -5,7 +5,7 @@ import {renderTransactionList,updateSummaryCards} from './ui-render.js';
 import {handleOpenCloseModal,setModalMode} from './ui-modal.js';
 import {renderCategoryWidget,renderMonthlyChartWidget} from './ui-widgets.js';
 import {getTransactions,getTransactionById,addTransaction,updateTransaction, removeTransaction , FillForm,Transaction_arr} from './state.js';
-import {loadTransactions,addTransactionData,editTransactionData} from './worker.js';
+import {loadTransactions,addTransactionData,editTransactionData,DeleteTransactionData} from './worker.js';
 
 //Modal
 export const Add_Transaction = document.getElementById('addTransactionBtn');
@@ -44,10 +44,8 @@ const dateFrom = document.getElementById('dateFrom');
 const dateTo = document.getElementById('dateTo');
 const sortFilter = document.getElementById('sortFilter');
 document.addEventListener('DOMContentLoaded',  async () => {
-    let loaded =await loadTransactions();
-    if(loaded){
-         globalUpate();
-    }
+
+   loadData();
 
 });
 TransactionForm.addEventListener('submit', (e) => {
@@ -55,8 +53,9 @@ TransactionForm.addEventListener('submit', (e) => {
     let formData = new FormData(e.target);
     let data = Object.fromEntries(formData.entries());
     let editID = transactionId.value;
+    
     if (editID) {
-        editTransactionData(editID);
+        editTransactionData(data,editID);
     } else {
         data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
         addTransactionData(data);
@@ -64,7 +63,7 @@ TransactionForm.addEventListener('submit', (e) => {
     idReset();
     TransactionForm.reset();
     handleOpenCloseModal('close');
-    globalUpate();
+    loadData();
 });
 
 window.edit = function (id) {
@@ -78,16 +77,24 @@ window.edit = function (id) {
 window.Delete = function (id) {
         let userConfirmed = confirm('Are you sure want to delete this Transaction ?');
         if (userConfirmed) {
-            let result = removeTransaction(id);
-            if (result) {
-                globalUpate();
-                saveLocalStorage(getTransactions());
+           let res = DeleteTransactionData(id);
+            if (res) {
+                loadData();
+                // globalUpate();
+                // saveLocalStorage(getTransactions());
             }
         }
 
  }
 export const idReset = () => {
     transactionId.value = null;
+}
+
+async function loadData (){
+     let loaded = await loadTransactions();
+    if(loaded){
+         globalUpate();
+    }
 }
 
 export function globalUpate(){

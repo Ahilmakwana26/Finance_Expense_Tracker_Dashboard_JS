@@ -38,5 +38,5 @@ export const FillForm = (form, data) => {
     //The browser is doing a lot of the work for you. That's one of the nice things about the DOM form API.
 }
 export function getTransactionById(id) {
-    return Transaction_arr.find((data) => data.id === id)
+    return Transaction_arr.find(transaction => transaction.id == id);
 }

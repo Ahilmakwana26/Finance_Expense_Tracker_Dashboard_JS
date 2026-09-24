@@ -79,7 +79,7 @@ export const renderTransactionList = (transactionArr, container) => {
 
                     <button
                         class="action-btn edit-btn"
-                        onclick="edit('${id}')"
+                        onclick="edit(${id})"
                         aria-label="Edit transaction"
                         data-edit-id="${id}"
                     >
@@ -101,7 +101,7 @@ export const renderTransactionList = (transactionArr, container) => {
 
                     <button
                         class="action-btn delete-btn"
-                        onclick="Delete('${id}')"
+                        onclick="Delete(${id})"
                         aria-label="Delete transaction"
                         data-delete-id="${id}"
                     >
