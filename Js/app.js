@@ -1,11 +1,11 @@
 import categorySVGS from './config.js';
 import applyFilters from './filters.js';
-import {getLocalStorage,saveLocalStorage} from './storage.js';
-import {renderTransactionList,updateSummaryCards} from './ui-render.js';
-import {handleOpenCloseModal,setModalMode} from './ui-modal.js';
-import {renderCategoryWidget,renderMonthlyChartWidget} from './ui-widgets.js';
-import {getTransactions,getTransactionById,addTransaction,updateTransaction, removeTransaction , FillForm,Transaction_arr} from './state.js';
-import {loadTransactions,addTransactionData,editTransactionData,DeleteTransactionData} from './worker.js';
+import { getLocalStorage, saveLocalStorage } from './storage.js';
+import { renderTransactionList, updateSummaryCards } from './ui-render.js';
+import { handleOpenCloseModal, setModalMode } from './ui-modal.js';
+import { renderCategoryWidget, renderMonthlyChartWidget } from './ui-widgets.js';
+import { getTransactions, getTransactionById, addTransaction, updateTransaction, removeTransaction, FillForm, Transaction_arr } from './state.js';
+import { loadTransactions, addTransactionData, editTransactionData, deleteTransactionData } from './worker.js';
 
 //Modal
 export const Add_Transaction = document.getElementById('addTransactionBtn');
@@ -30,12 +30,12 @@ const totalExpanse = document.getElementById('totalExpanse');
 const totalSaving = document.getElementById('totalSaving');
 
 let cardElements = {
-    totalBalance:totalBalance,
-    totalbalance_percentage:totalbalance_percentage,
-    totalIncome:totalIncome,
-    totalExpanse:totalExpanse,
-    totalSaving:totalSaving,
- }
+    totalBalance: totalBalance,
+    totalbalance_percentage: totalbalance_percentage,
+    totalIncome: totalIncome,
+    totalExpanse: totalExpanse,
+    totalSaving: totalSaving,
+}
 //Filters
 const searchTransactions = document.getElementById('searchTransactions');
 const categoryFilter = document.getElementById('categoryFilter');
@@ -43,22 +43,29 @@ const typeFilter = document.getElementById('typeFilter');
 const dateFrom = document.getElementById('dateFrom');
 const dateTo = document.getElementById('dateTo');
 const sortFilter = document.getElementById('sortFilter');
-document.addEventListener('DOMContentLoaded',  async () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
-   loadData();
+    loadData();
 
 });
-TransactionForm.addEventListener('submit', (e) => {
+let result = null;
+TransactionForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     let formData = new FormData(e.target);
     let data = Object.fromEntries(formData.entries());
     let editID = transactionId.value;
-    
+
     if (editID) {
-        editTransactionData(data,editID);
+        result = await editTransactionData(data, editID);
     } else {
-        data.id = crypto.randomUUID();//UUID (Universally Unique Identifier).
-        addTransactionData(data);
+        result = await addTransactionData(data);
+    }
+
+    if (result) {
+        alert(result.message);
+        if (!result.success) {
+            return;
+        }
     }
     idReset();
     TransactionForm.reset();
@@ -74,34 +81,37 @@ window.edit = function (id) {
         FillForm(TransactionForm, editData);
     }
 }
-window.Delete = function (id) {
-        let userConfirmed = confirm('Are you sure want to delete this Transaction ?');
-        if (userConfirmed) {
-           let res = DeleteTransactionData(id);
-            if (res) {
-                loadData();
-                // globalUpate();
-                // saveLocalStorage(getTransactions());
-            }
+window.Delete = async function (id) {
+    const userConfirmed = confirm(
+        "Are you sure you want to delete this transaction?"
+    );
+    if (userConfirmed) {
+        const res = await deleteTransactionData(id);
+        if (res.success) {
+            loadData();
+            alert(res.message);
+        } else {
+            console.error(res.message);
+            alert(res.message);
         }
-
- }
+    }
+}
 export const idReset = () => {
     transactionId.value = null;
 }
 
-async function loadData (){
-     let loaded = await loadTransactions();
-    if(loaded){
-         globalUpate();
+async function loadData() {
+    let loaded = await loadTransactions();
+    if (loaded) {
+        globalUpate();
     }
 }
 
-export function globalUpate(){
-    renderTransactionList(getTransactions(),transactionsListContainer);
-    updateSummaryCards(getTransactions(),cardElements);
-    renderCategoryWidget(getTransactions(),categoryStatsContainer);
-    renderMonthlyChartWidget(getTransactions(),monthlyChartContainer);   
+export function globalUpate() {
+    renderTransactionList(getTransactions(), transactionsListContainer);
+    updateSummaryCards(getTransactions(), cardElements);
+    renderCategoryWidget(getTransactions(), categoryStatsContainer);
+    renderMonthlyChartWidget(getTransactions(), monthlyChartContainer);
 }
 searchTransactions.addEventListener('input', (e) => {
     applyFilters(e.target.value, 'search_name');
